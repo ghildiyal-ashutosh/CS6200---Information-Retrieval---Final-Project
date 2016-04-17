@@ -1,0 +1,11 @@
+For BM25:
+	I reuesed the previous assignments' code and corpus, and put the key code in BM25.java file. Overall, the steps are:
+		1. Indexing the files;
+		2. Create the inverted_index lists;
+		3. rank;
+	It's worth noting that all the documents that do not contain any query terms are ignored from the ranking;
+
+For Lucene:
+	I changed all the path into harder coded version, so just run it once, it will show all the results for all the queries.
+
+	It's worth noting that you should delete all the files in "indexes" folder before re-run the program.
