@@ -1,4 +1,6 @@
 import parseQueries
+import CommonWords
+
 
 similarFile = "similar.txt"
 derivativeFile = "derivative.txt"
@@ -24,21 +26,31 @@ df.close()
 # print dictSimilar['code']
 # print dictDerivative['code']
 
-sOutputFile = "queryExpansion/expandedQueriesTokensUsingSynonym.txt"
-dOutputFile = "queryExpansion/expandedQueriesTokensUsingDerivants.txt"
-oOutputFile = "queryExpansion/originalQueriesTokens.txt"
+sOutputFile = "../queries/expandedQueriesTokensUsingSynonym.txt"
+dOutputFile = "../queries/expandedQueriesTokensUsingDerivants.txt"
+oOutputFile = "../queries/originalQueriesTokens.txt"
+pOutputFile = "../queries/stoppedQueriesTokens.txt"
+dpOutputFile = "../queries/stoppedExpandedQueriesTokensUsingDerivants.txt"
 
 sfo = open(sOutputFile, 'w')
 dfo = open(dOutputFile, 'w')
 ofo = open(oOutputFile, 'w')
+pfo = open(pOutputFile, 'w')
+dpfo = open(dpOutputFile, 'w')
+
 queries = parseQueries.getTokenizedQueries()
 for q in queries:
 	sfo.write(str(q + 1) + " ")
 	dfo.write(str(q + 1) + " ")
 	ofo.write(str(q + 1) + " ")
+	pfo.write(str(q + 1) + " ")
+	dpfo.write(str(q + 1) + " ")
 	for term in queries[q]:
 		ofo.write(term.lower())
 		ofo.write(" ")
+		if not CommonWords.isCommonWord(term):
+			pfo.write(term.lower())
+			pfo.write(" ")
 		if term in dictSimilar:
 			for sTerm in dictSimilar[term]:
 				sfo.write(sTerm)
@@ -47,8 +59,16 @@ for q in queries:
 			for dTerm in dictDerivative[term]:
 				dfo.write(dTerm)
 				dfo.write(" ")
+				if not CommonWords.isCommonWord(term):
+					dpfo.write(dTerm)
+					dpfo.write(" ")
 	sfo.write('\n')
 	dfo.write('\n')
 	ofo.write('\n')
+	pfo.write('\n')
+	dpfo.write('\n')
 sfo.close()
 dfo.close()
+ofo.close()
+pfo.close()
+dpfo.close()
