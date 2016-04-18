@@ -11,8 +11,6 @@ def getTokenizedQueries():
 	for lineWithEnter in f:
 		line = lineWithEnter[:-1]
 
-		
-
 		if len(line) == 0:
 			continue
 		elif line[0] == '<' or (line[0] == ' ' and len(line) == 1):
