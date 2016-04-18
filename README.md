@@ -29,7 +29,7 @@ Stopping is a technique that exclude words that are too common to identify targe
 ### Implementations
 First, we tokenize the original 64 queries using [parseQueries.py](/python/parseQueries.py).
 
-Then we use [Words API](https://www.wordsapi.com/) to retreive ([getWordInfo.py](/python/getWordInfo.py))synonyms and derivants of each term that apper in tokenized queries. After that, we got two files [derivative](/python/derivative.txt) and [similar](/python/similar.txt). The first word of each row of these files comes from original queries, and remaining ones are expanded query terms. When expanding, we exclude common words ([CommonWords.py](/python/CommonWords.py)). Although not using stopping at this part, we still exclude common words when applying the queries expansion. 
+Then we use [Words API](https://www.wordsapi.com/) to retreive ([getWordInfo.py](/python/getWordInfo.py)) synonyms and derivants of each term that apper in tokenized queries. After that, we got two files [derivative](/python/derivative.txt) and [similar](/python/similar.txt). The first word of each row of these files comes from original queries, and remaining ones are expanded query terms. When expanding, we exclude common words ([CommonWords.py](/python/CommonWords.py)). Although not using stopping at this part, we still exclude common words when applying the queries expansion. 
 
 Finally, use [getQueries.py](/python/getQueries.py) to appy the query expansion. At the same time, we also generate queries with stop words excluded. A combination of stopping and expansion (using derivants) is also applied. Together we got five files in total:
 
@@ -39,5 +39,6 @@ Finally, use [getQueries.py](/python/getQueries.py) to appy the query expansion.
 4. [Queries without Common Words (Stopping)](/queries/stoppedQueriesTokens.txt)
 5. [Expanded Queries Using Derivants without Common Words](/queries/stoppedQueriesTokens.txt)
 
+We use the five queries files above as following: In task 1, we use 1; In task 2, we combine 1 with 2 and 3, respectively; In task 3A, we use 4; In Phase 2 (7th run), we use the combination of 4 and 5.
 
 
