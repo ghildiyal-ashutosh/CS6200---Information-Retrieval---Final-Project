@@ -33,7 +33,7 @@ Then we use [Words API](https://www.wordsapi.com/) to retreive ([getWordInfo.py]
 
 Finally, use [getQueries.py](/python/getQueries.py) to appy the query expansion. At the same time, we also generate queries with stop words excluded. A combination of stopping and expansion (using derivants) is also applied. Together we got five files in total:
 
-1. [Original Queries](/queries/originalQuriesTokens.txt)
+1. [Original Queries](/queries/originalQueriesTokens.txt)
 2. [Expanded Queries Using Derivants](/queries/expandedQueriesTokensUsingDerivants.txt)
 3. [Expanded Queries Using Synonyms](/queries/expandedQueriesTokensUsingSynonyms.txt)
 4. [Queries without Common Words (Stopping)](/queries/stoppedQueriesTokens.txt)
