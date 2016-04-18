@@ -37,7 +37,7 @@ Finally, use [getQueries.py](/python/getQueries.py) to appy the query expansion.
 2. [Expanded Queries Using Derivants](/queries/expandedQueriesTokensUsingDerivants.txt)
 3. [Expanded Queries Using Synonyms](/queries/expandedQueriesTokensUsingDerivants.txt)
 4. [Queries without Common Words (Stopping)](/queries/stoppedQueriesTokens.txt)
-5. [Expanded Queries Using Derivants without Common Words](/queries/stoppedQueriesTokens.txt)
+5. [Expanded Queries Using Derivants without Common Words](/queries/stoppedExpandedQueriesTokensUsingDerivants.txt)
 
 We use the five queries files above as following: In task 1, we use 1; In task 2, we combine 1 with 2 and 3, respectively; In task 3A, we use 4; In Phase 2 (7th run), we use the combination of 4 and 5.
 
