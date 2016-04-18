@@ -35,7 +35,7 @@ Finally, use [getQueries.py](/python/getQueries.py) to appy the query expansion.
 
 1. [Original Queries](/queries/originalQuriesTokens.txt)
 2. [Expanded Queries Using Derivants](/queries/expandedQueriesTokensUsingDerivants.txt)
-3. [Expanded Queries Using Synonyms](/queries/expandedQueriesTokensUsingDerivants.txt)
+3. [Expanded Queries Using Synonyms](/queries/expandedQueriesTokensUsingSynonyms.txt)
 4. [Queries without Common Words (Stopping)](/queries/stoppedQueriesTokens.txt)
 5. [Expanded Queries Using Derivants without Common Words](/queries/stoppedExpandedQueriesTokensUsingDerivants.txt)
 
