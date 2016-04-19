@@ -56,11 +56,11 @@ for q in queries:
 		sfo.write(" ")
 		dfo.write(term.lower())
 		dfo.write(" ")
-		dpfo.write(term.lower())
-		dpfo.write(" ")
 		if not CommonWords.isCommonWord(term):
 			pfo.write(term.lower())
 			pfo.write(" ")
+			dpfo.write(term.lower())
+			dpfo.write(" ")
 		if term in dictSimilar:
 			for sTerm in dictSimilar[term]:
 				sfo.write(sTerm)
