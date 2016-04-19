@@ -10,10 +10,14 @@ public class Executer {
 			fp.parseFileName();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}*/
-		/*
-		FileParser fp1 = new FileParser();
+		}
+		*/
+		
+		/*FileParser fp1 = new FileParser();
 		fp1.tokenize();
+		*/
+		/*StemCorpusParser scp = new StemCorpusParser();
+		scp.parse();
 		*/
 		
 		Summarizer s = new Summarizer();

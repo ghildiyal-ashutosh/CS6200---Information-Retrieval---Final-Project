@@ -13,7 +13,8 @@ import org.jsoup.nodes.Document;
 
 
 public class FileParser {
-	private static String PATH = "files/"; 
+	//private static String PATH = "originalCorpus/";
+	private static String PATH = "stemmedCorpus/";
 	private ArrayList<File> files;
 	
 	public FileParser(){
@@ -35,10 +36,9 @@ public class FileParser {
 	
 	public void parseHtml() throws IOException {
 		for(File file : files){
-			String body = Jsoup.parse(file, "ISO-8859-1").select("body").html();
-			String content = Jsoup.parse(body).select("p").text();
+			String body = Jsoup.parse(file, "ISO-8859-1").select("pre").text();
 			PrintWriter pw = new PrintWriter(file);
-			pw.println(content);
+			pw.println(body);
 			pw.close();
 		}
 	}

@@ -17,20 +17,18 @@ import java.util.PriorityQueue;
 
 
 public class Summarizer {
-	static private String PATH = "files/";
+	//static private String PATH = "originalCorpus/";
+	//static private String PATH = "stoppedCorpus/";
+	static private String PATH = "stemmedCorpus/";
 	private ArrayList<File> files;
 	
 	private Hashtable<String, Integer> FileSize; 
 	private Hashtable<String, Pointers> unigram;
-	private Hashtable<String, Pointers> bigram;
-	private Hashtable<String, Pointers> trigram;
 	
 	public Summarizer(){
 		//initialize variables
 		FileSize = new Hashtable<String, Integer>();
 		unigram = new Hashtable<String, Pointers>();
-		bigram = new Hashtable<String, Pointers>();
-		trigram = new Hashtable<String, Pointers>();
 		
 		//initialize the arrayList
 		files = new ArrayList<File>();
@@ -59,147 +57,71 @@ public class Summarizer {
 			}
 			
 			String[] uniTokens = getUniToken(content);
-			//String[] biTokens = getBiToken(content);
-			//String[] triTokens = getTriToken(content);
+			
+			/*
+			int totalSpace = 0;
+			for(String s : uniTokens){
+				if(s.equals("") || s.equals("\\s"))
+					totalSpace++;
+			}
+			if(totalSpace != 0)
+				System.out.println("Total Spaces are " + totalSpace);
+			*/
 			
 			summarize(uniTokens, 1, file);
-			//summarize(biTokens, 2, file);
-			//summarize(triTokens, 3, file);
 			
 			//store the file size;
 			FileSize.put(file.getName(), uniTokens.length);
 			
-			//get unigram first
-			
 		}
-		
 		Comparator<WordTF> wtfComparator = new WTFComparator();
 		PriorityQueue<WordTF> unigram1 = new PriorityQueue<WordTF>(1,wtfComparator);
-		PriorityQueue<WordTF> bigram1 = new PriorityQueue<WordTF>(1,wtfComparator);
-		PriorityQueue<WordTF> trigram1 = new PriorityQueue<WordTF>(1,wtfComparator);
 		
 		Comparator<WordDF> wdfComparator = new WDFComparator();
 		PriorityQueue<WordDF> unigram2 = new PriorityQueue<WordDF>(1,wdfComparator);
-		PriorityQueue<WordDF> bigram2 = new PriorityQueue<WordDF>(1,wdfComparator);
-		PriorityQueue<WordDF> trigram2 = new PriorityQueue<WordDF>(1,wdfComparator);
 		
 		//check unigram
 		for(Entry<String, Pointers> entry : unigram.entrySet()){
 			unigram1.add(new WordTF(entry.getKey(), entry.getValue().total));
 			unigram2.add(new WordDF(entry.getKey(), entry.getValue()));
 		}
-		
-		File file = new File("results/unigram1.txt");
-		PrintWriter pw;
-		try {
-			pw = new PrintWriter(file);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return;
-		}
-		while(!unigram1.isEmpty()){
-			WordTF wtf = unigram1.poll();
-			pw.println(wtf.word + " " + wtf.tf);
-		}
-		pw.close();
-		
-		file = new File("results/unigram2.txt");
-		try {
-			pw = new PrintWriter(file);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return;
-		}
-		while(!unigram2.isEmpty()){
-			WordDF wdf = unigram2.poll();
-			pw.print(wdf.word + "\t");
-			for(Pointer p : wdf.pointers.pointers)
-				pw.print(p.docID + ",");
-			pw.print("\t" + wdf.pointers.pointers.size());
-			pw.print("\n");
-		}
-		pw.close();
-		
-		//check bigram
-		for(Entry<String, Pointers> entry : bigram.entrySet()){
-			bigram1.add(new WordTF(entry.getKey(), entry.getValue().total));
-			bigram2.add(new WordDF(entry.getKey(), entry.getValue()));
-		}
-		
-		file = new File("results/bigram1.txt");
-		try {
-			pw = new PrintWriter(file);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return;
-		}
-		while(!bigram1.isEmpty()){
-			WordTF wtf = bigram1.poll();
-			pw.println(wtf.word + " " + wtf.tf);
-		}
-		pw.close();
-		
-		file = new File("results/bigram2.txt");
-		try {
-			pw = new PrintWriter(file);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return;
-		}
-		while(!bigram2.isEmpty()){
-			WordDF wdf = bigram2.poll();
-			pw.print(wdf.word + "\t");
-			for(Pointer p : wdf.pointers.pointers)
-				pw.print(p.docID + ",");
-			pw.print("\t" + wdf.pointers.pointers.size());
-			pw.print("\n");
-		}
-		pw.close();
-		
-		//check trigram
-		for(Entry<String, Pointers> entry : trigram.entrySet()){
-			trigram1.add(new WordTF(entry.getKey(), entry.getValue().total));
-			trigram2.add(new WordDF(entry.getKey(), entry.getValue()));
-		}
-		
-		file = new File("results/trigram1.txt");
-		try {
-			pw = new PrintWriter(file);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return;
-		}
-		while(!trigram1.isEmpty()){
-			WordTF wtf = trigram1.poll();
-			pw.println(wtf.word + " " + wtf.tf);
-		}
-		pw.close();
-		
-		file = new File("results/trigram2.txt");
-		try {
-			pw = new PrintWriter(file);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return;
-		}
-		while(!trigram2.isEmpty()){
-			WordDF wdf = trigram2.poll();
-			pw.print(wdf.word + "\t");
-			for(Pointer p : wdf.pointers.pointers)
-				pw.print(p.docID + ",");
-			pw.print("\t" + wdf.pointers.pointers.size());
-			pw.print("\n");
-		}
-		pw.close();
 	}
 	
 	public void rank(){
-		BM25 bm25 = new BM25(files, FileSize, unigram);
-		bm25.rank();
+		RM rm = new RM(files, FileSize, unigram);
+		
+		//rm.rankBM25();
+		//System.out.println("Finished Ranking BM25");
+		
+		//rm.rankBM25_Derivants();
+		//System.out.println("Finished Ranking BM25_Derivants");
+		
+		//rm.rankBM25_Synonym();
+		//System.out.println("Finished Ranking BM25_Synonym");
+		
+		//rm.rankTFIDF();
+		//System.out.println("Finished Ranking TFIDF");
+		
+		/***********************************************
+		 * If you want to run the following functions, 
+		 * please change the PATH value to "stoppedCorpus"
+		 ***********************************************/
+		/*rm.rankStop();
+		System.out.println("Finished Ranking Stop");
+		
+		rm.rankStopExtend();
+		System.out.println("Finished Ranking StopExtend");*/
+		
+		/***********************************************
+		 * If you want to run the following functions, 
+		 * please change the PATH value to "stemmedCorpus"
+		 ***********************************************/
+		rm.rankStem();
+		System.out.println("Finished Ranking Stem");
 	}
 	
 	private String[] getUniToken(String content){
-		return content.split("\\s");
+		return content.split("\\s+?");
 	}
 	
 	private String[] getBiToken(String content){
@@ -226,18 +148,13 @@ public class Summarizer {
 			case 1:
 				current = this.unigram;
 				break;
-			case 2:
-				current = this.bigram;
-				break;
-			case 3:
-				current = this.trigram;
-				break;
 			default:
 				return;
 				
 		}
 		Hashtable<String, Integer> wordCount = new Hashtable<String, Integer>();
 		for(String token : tokens){
+			if(token.equals("") || token.equals("\\s")) continue;
 			if(wordCount.containsKey(token)) 
 				wordCount.replace(token, wordCount.get(token)+1);
 			else

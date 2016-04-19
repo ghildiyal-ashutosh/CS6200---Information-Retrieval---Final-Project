@@ -1,3 +1,0 @@
-The stoplist is:
-the, of, and, in, to, a, is, for, as, by, are, that, with;
-I cut the stoplist at word "energy", that is because the document frequency of energy is 780, instead of 1000, and all the other words in stoplist is 1000. So if we put energy into stoplist, then the other 220 documents will may not be distinguished from the other 780 documents. So I choose the stoplist cut off at "energy".
