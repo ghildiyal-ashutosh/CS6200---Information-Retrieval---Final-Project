@@ -26,11 +26,15 @@ df.close()
 # print dictSimilar['code']
 # print dictDerivative['code']
 
-sOutputFile = "../queries/expandedQueriesTokensUsingSynonym.txt"
-dOutputFile = "../queries/expandedQueriesTokensUsingDerivants.txt"
+# sOutputFile = "../queries/expandedQueriesTokensUsingSynonym.txt"
+# dOutputFile = "../queries/expandedQueriesTokensUsingDerivants.txt"
+sOutputFile = "../queries/expandedQueriesTokensUsingSynonymOriginalIncluded.txt"
+dOutputFile = "../queries/expandedQueriesTokensUsingDerivantsOriginalIncluded.txt"
 oOutputFile = "../queries/originalQueriesTokens.txt"
 pOutputFile = "../queries/stoppedQueriesTokens.txt"
-dpOutputFile = "../queries/stoppedExpandedQueriesTokensUsingDerivants.txt"
+# dpOutputFile = "../queries/stoppedExpandedQueriesTokensUsingDerivants.txt"
+dpOutputFile = "../queries/stoppedExpandedQueriesTokensUsingDerivantsOriginalIncluded.txt"
+
 
 sfo = open(sOutputFile, 'w')
 dfo = open(dOutputFile, 'w')
@@ -48,6 +52,12 @@ for q in queries:
 	for term in queries[q]:
 		ofo.write(term.lower())
 		ofo.write(" ")
+		sfo.write(term.lower())
+		sfo.write(" ")
+		dfo.write(term.lower())
+		dfo.write(" ")
+		dpfo.write(term.lower())
+		dpfo.write(" ")
 		if not CommonWords.isCommonWord(term):
 			pfo.write(term.lower())
 			pfo.write(" ")
