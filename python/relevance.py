@@ -1,3 +1,8 @@
+import argparse
+parser = argparse.ArgumentParser(description='isRelevant Judge')
+parser.add_argument("-f", "--file", help="file name", required = True)
+parser.add_argument("-q", "--query", help="query number", required = True)
+
 relFileName = "../files/cacm.rel"
 
 def isRelevant(queryNumber, fileName):
@@ -38,7 +43,8 @@ def numRelevant(queryNumber):
 	rf.close()
 	return count
 
-
+args = vars(parser.parse_args())
+print isRelevant(args['query'], args['file'])
 # print isRelevant(1, "CACM-1410") # T
 # print isRelevant(1, "CACM-1411") # F
 # print isRelevant(2, "CACM-2863") # T
