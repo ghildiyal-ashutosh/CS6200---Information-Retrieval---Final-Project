@@ -63,6 +63,16 @@ TODO
 All evaluation values are obtained through [evaluation.py](/python/evaluation.py).
 
 ## Results
+|                                                     | Mean Average Precision | Mean Reciprocal Rank |
+|-----------------------------------------------------|------------------------|----------------------|
+| BM25                                                |                        |123                   |345
+| Tf-Idf                                              |                        |234                   |456
+| Lucene                                              |                        |                      |
+| BM25 (Query Expansion Using Synonyms)               |                        |                      |
+| BM25 (Query Expansion Using Derivants)              |                        |                      |
+| BM25 (Stopping)                                     |                        |                      |
+| BM25 (Stopping and Query Expansion Using Derivants) |                        |                      |
+
 
 ## Conclusions and Outlook
 
