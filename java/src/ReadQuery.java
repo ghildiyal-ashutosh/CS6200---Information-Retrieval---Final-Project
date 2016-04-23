@@ -11,10 +11,10 @@ public class ReadQuery {
 
 	private String path;
 	
-	//private static int count = 64;
-	private static int count = 7;
+	private int count;
 	
-	public ReadQuery(String path){
+	public ReadQuery(String path, int count){
+		this.count = count;
 		this.path = path;
 	}
 	public ArrayList<Hashtable<String, Integer>> Read() throws IOException{

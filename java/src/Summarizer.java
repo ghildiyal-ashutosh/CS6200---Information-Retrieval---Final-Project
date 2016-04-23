@@ -17,15 +17,15 @@ import java.util.PriorityQueue;
 
 
 public class Summarizer {
-	//static private String PATH = "originalCorpus/";
-	//static private String PATH = "stoppedCorpus/";
-	static private String PATH = "stemmedCorpus/";
+	private String PATH;
 	private ArrayList<File> files;
 	
 	private Hashtable<String, Integer> FileSize; 
 	private Hashtable<String, Pointers> unigram;
 	
-	public Summarizer(){
+	public Summarizer(String path){
+		
+		this.PATH = path;
 		//initialize variables
 		FileSize = new Hashtable<String, Integer>();
 		unigram = new Hashtable<String, Pointers>();
@@ -58,23 +58,13 @@ public class Summarizer {
 			
 			String[] uniTokens = getUniToken(content);
 			
-			/*
-			int totalSpace = 0;
-			for(String s : uniTokens){
-				if(s.equals("") || s.equals("\\s"))
-					totalSpace++;
-			}
-			if(totalSpace != 0)
-				System.out.println("Total Spaces are " + totalSpace);
-			*/
-			
 			summarize(uniTokens, 1, file);
 			
 			//store the file size;
 			FileSize.put(file.getName(), uniTokens.length);
 			
 		}
-		Comparator<WordTF> wtfComparator = new WTFComparator();
+		/*Comparator<WordTF> wtfComparator = new WTFComparator();
 		PriorityQueue<WordTF> unigram1 = new PriorityQueue<WordTF>(1,wtfComparator);
 		
 		Comparator<WordDF> wdfComparator = new WDFComparator();
@@ -84,38 +74,38 @@ public class Summarizer {
 		for(Entry<String, Pointers> entry : unigram.entrySet()){
 			unigram1.add(new WordTF(entry.getKey(), entry.getValue().total));
 			unigram2.add(new WordDF(entry.getKey(), entry.getValue()));
-		}
+		}*/
 	}
 	
-	public void rank(){
+	public void rankOriginalCorpus(){
 		RM rm = new RM(files, FileSize, unigram);
 		
-		//rm.rankBM25();
-		//System.out.println("Finished Ranking BM25");
+		rm.rankBM25();
+		System.out.println("Finished Ranking BM25");
 		
-		//rm.rankBM25_Derivants();
-		//System.out.println("Finished Ranking BM25_Derivants");
+		rm.rankBM25_Derivants();
+		System.out.println("Finished Ranking BM25_Derivants");
 		
-		//rm.rankBM25_Synonym();
-		//System.out.println("Finished Ranking BM25_Synonym");
+		rm.rankBM25_Synonym();
+		System.out.println("Finished Ranking BM25_Synonym");
 		
-		//rm.rankTFIDF();
-		//System.out.println("Finished Ranking TFIDF");
+		rm.rankTFIDF();
+		System.out.println("Finished Ranking TFIDF");	
+	}
+	
+	public void rankStoppedCorpus(){
+		RM rm = new RM(files, FileSize, unigram);
 		
-		/***********************************************
-		 * If you want to run the following functions, 
-		 * please change the PATH value to "stoppedCorpus"
-		 ***********************************************/
-		/*rm.rankStop();
+		rm.rankStop();
 		System.out.println("Finished Ranking Stop");
 		
 		rm.rankStopExtend();
-		System.out.println("Finished Ranking StopExtend");*/
+		System.out.println("Finished Ranking StopExtend");
 		
-		/***********************************************
-		 * If you want to run the following functions, 
-		 * please change the PATH value to "stemmedCorpus"
-		 ***********************************************/
+	}
+	
+	public void rankStemmedCorpus(){
+		RM rm = new RM(files, FileSize, unigram);
 		rm.rankStem();
 		System.out.println("Finished Ranking Stem");
 	}
@@ -123,25 +113,7 @@ public class Summarizer {
 	private String[] getUniToken(String content){
 		return content.split("\\s+?");
 	}
-	
-	private String[] getBiToken(String content){
-		String[] tokens = content.split("\\s");
-		String[] ret = new String[tokens.length-1];
-		for(int i=0; i<tokens.length-1; i++){
-			ret[i] = tokens[i] + " " + tokens[i+1];
-		}
-		return ret;
-	}
 
-	private String[] getTriToken(String content){	
-		String[] tokens = content.split("\\s");
-		String[] ret = new String[tokens.length-2];
-		for(int i=0; i<tokens.length-2; i++){
-			ret[i] = tokens[i] + " " + tokens[i+1] + " " + tokens[i+2];
-		}
-		return ret;
-	}
-	
 	private void summarize(String[] tokens, int count, File file){
 		Hashtable<String, Pointers> current;
 		switch(count){

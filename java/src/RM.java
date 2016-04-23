@@ -1,6 +1,8 @@
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,7 +51,7 @@ public class RM {
 	
 	/**************BM25***************/
 	public void rankBM25(){
-		ReadQuery rq = new ReadQuery("originalQueriesTokens.txt");
+		ReadQuery rq = new ReadQuery("quries/originalQueriesTokens.txt", 64);
 		ArrayList<Hashtable<String, Integer>> content;
 		try {
 			content = rq.Read();
@@ -60,12 +62,12 @@ public class RM {
 		int i=0;
 		for(Hashtable<String, Integer> query : content){
 			i++;
-			rankBM25PerQuery(query, "query"+i, scores.get(i-1), ranks[i-1]);
+			rankPerQuery(query, "query"+i, "BM25_Origin", "BM25");
 		}
 		
 	}
 	public void rankBM25_Derivants(){
-		ReadQuery rq = new ReadQuery("expandedQueriesTokensUsingDerivantsOriginalIncluded.txt");
+		ReadQuery rq = new ReadQuery("quries/expandedQueriesTokensUsingDerivantsOriginalIncluded.txt", 64);
 		ArrayList<Hashtable<String, Integer>> content;
 		try {
 			content = rq.Read();
@@ -76,12 +78,12 @@ public class RM {
 		int i=0;
 		for(Hashtable<String, Integer> query : content){
 			i++;
-			rankBM25_Derivants_PerQuery(query, "query"+i, scores.get(i-1), ranks[i-1]);
+			rankPerQuery(query, "query"+i, "BM25_Expanded_Derivants", "BM25");
 		}
 		
 	}
 	public void rankBM25_Synonym(){
-		ReadQuery rq = new ReadQuery("expandedQueriesTokensUsingSynonymOriginalIncluded.txt");
+		ReadQuery rq = new ReadQuery("quries/expandedQueriesTokensUsingSynonymOriginalIncluded.txt", 64);
 		ArrayList<Hashtable<String, Integer>> content;
 		try {
 			content = rq.Read();
@@ -92,13 +94,13 @@ public class RM {
 		int i=0;
 		for(Hashtable<String, Integer> query : content){
 			i++;
-			rankBM25_Synonym_PerQuery(query, "query"+i, scores.get(i-1), ranks[i-1]);
+			rankPerQuery(query, "query"+i, "BM25_Expanded_Synonym", "BM25");
 		}
 		
 	}
 	
 	public void rankStopExtend(){
-		ReadQuery rq = new ReadQuery("stoppedExpandedQueriesTokensUsingDerivantsOriginalIncluded.txt");
+		ReadQuery rq = new ReadQuery("quries/stoppedExpandedQueriesTokensUsingDerivantsOriginalIncluded.txt", 64);
 		ArrayList<Hashtable<String, Integer>> content;
 		try {
 			content = rq.Read();
@@ -109,12 +111,12 @@ public class RM {
 		int i=0;
 		for(Hashtable<String, Integer> query : content){
 			i++;
-			rankStopExtendPerQuery(query, "query"+i, scores.get(i-1), ranks[i-1]);
+			rankPerQuery(query, "query"+i, "StopExtend", "BM25");
 		}
 	}
 	
 	public void rankStop(){
-		ReadQuery rq = new ReadQuery("stoppedQueriesTokens.txt");
+		ReadQuery rq = new ReadQuery("quries/stoppedQueriesTokens.txt", 64);
 		ArrayList<Hashtable<String, Integer>> content;
 		try {
 			content = rq.Read();
@@ -125,12 +127,12 @@ public class RM {
 		int i=0;
 		for(Hashtable<String, Integer> query : content){
 			i++;
-			rankStopPerQuery(query, "query"+i, scores.get(i-1), ranks[i-1]);
+			rankPerQuery(query, "query"+i, "Stop", "BM25");
 		}
 	}
 	
 	public void rankStem(){
-		ReadQuery rq = new ReadQuery("cacm_stem.query.txt");
+		ReadQuery rq = new ReadQuery("quries/cacm_stem.query.txt", 7);
 		ArrayList<Hashtable<String, Integer>> content;
 		try {
 			content = rq.Read();
@@ -141,16 +143,21 @@ public class RM {
 		int i=0;
 		for(Hashtable<String, Integer> query : content){
 			i++;
-			rankStemPerQuery(query, "query"+i, scores.get(i-1), ranks[i-1]);
+			rankPerQuery(query, "query"+i, "Stem", "BM25");
 		}
 	}
 	
 	@SuppressWarnings("unchecked")
-	private void rankStemPerQuery(Hashtable<String, Integer> query, String name, Hashtable<String, Double> scores, ArrayList<DocScore> rank1){
+	private void rankPerQuery(Hashtable<String, Integer> query, String name, String destFolder, String searchEngine){
+		
 		ArrayList<DocScore> rank = new ArrayList<DocScore>();
-		scores = new Hashtable<String, Double>();
+		Hashtable<String, Double> scores = new Hashtable<String, Double>();
+		//relevance info
+		int R = 0, NR = 0;
+		
 		System.out.println(name + " Parsing: ");
 		HashSet<String> corpus = new HashSet<String>();
+		System.out.println("\tCorpus size is : " + corpus.size());
 		for(Entry<String, Integer> entry : query.entrySet()){
 			String term = entry.getKey();
 			if(!inverted_indexes.containsKey(term)) continue;
@@ -163,6 +170,19 @@ public class RM {
 		
 		for(String file : corpus){
 			scores.put(file, 0.0);
+			int relevant;
+			try {
+				relevant = checkRelevance(file, name.substring(5));
+			} catch (IOException e) {
+				e.printStackTrace();
+				return;
+			}
+			if(relevant == 0){
+				System.out.println("Error Calling relevance.py!");
+				return;
+			}
+			else if(relevant == 1) R++;
+			else NR ++;
 		}
 		
 		for(Entry<String, Integer> entry : query.entrySet()){
@@ -170,20 +190,39 @@ public class RM {
 			int qf = entry.getValue();
 			if(!inverted_indexes.containsKey(term)) continue;
 			Pointers docsContainTerm = inverted_indexes.get(term);
-			System.out.println("Number of docs contain - " + term + " - " + docsContainTerm.pointers.size());
+			System.out.println("\tNumber of docs contain - " + term + " - " + docsContainTerm.pointers.size());
+			
+			//get relevance information here
+			int r = 0, nr = 0;
+			for(Pointer pointer : docsContainTerm.pointers){
+				int relevant;
+				try {
+					relevant = checkRelevance(pointer.docID, name.substring(5));
+				} catch (IOException e) {
+					e.printStackTrace();
+					return;
+				}
+				if(relevant == 0){
+					System.out.println("Error Calling relevance.py!");
+					return;
+				}
+				else if(relevant == 1) r++;
+				else nr ++;
+			}
+			
 			for(Pointer pointer : docsContainTerm.pointers){
 				String doc = pointer.docID;
 				int tf =  pointer.tf;
 				int dl = fileSize.get(doc);
 				double K = getKForDoc(dl);
-				double score = getScorePerDoc(corpus.size(), docsContainTerm.pointers.size(), qf, tf, K);
+				double score = getScorePerDoc(corpus.size(), docsContainTerm.pointers.size(), qf, tf, K, R, r, NR, nr);
 				scores.replace(doc, score + scores.get(doc));
 			}
 		}
 		for(Entry<String, Double> entry : scores.entrySet()){
 			rank.add(new DocScore(entry.getKey(), entry.getValue()));
 		}
-		System.out.println("Size of rank is " + rank.size());
+		System.out.println("\tSize of rank is " + rank.size());
 		Collections.sort(rank,new Comparator(){
 			@Override
 			public int compare(Object o1, Object o2) {
@@ -196,7 +235,7 @@ public class RM {
 			}
 		}); 
 		
-		File file = new File("results/Stem/"+ name + ".txt");
+		File file = new File("../results/" + destFolder + "/"+ name + ".txt");
 		PrintWriter pw;
 		try {
 			pw = new PrintWriter(file);
@@ -207,346 +246,7 @@ public class RM {
 		int i=1;
 		for(DocScore ds : rank){
 			if(i > 100) break;
-			pw.println(name.charAt(5) + " Q0 " + ds.docId + " " + i + " " + ds.score + " BM25");
-			i++;
-		}
-		pw.close();
-	}
-	
-	@SuppressWarnings("unchecked")
-	private void rankStopPerQuery(Hashtable<String, Integer> query, String name, Hashtable<String, Double> scores, ArrayList<DocScore> rank1){
-		ArrayList<DocScore> rank = new ArrayList<DocScore>();
-		scores = new Hashtable<String, Double>();
-		System.out.println(name + " Parsing: ");
-		HashSet<String> corpus = new HashSet<String>();
-		for(Entry<String, Integer> entry : query.entrySet()){
-			String term = entry.getKey();
-			if(!inverted_indexes.containsKey(term)) continue;
-			Pointers docsContainTerm = inverted_indexes.get(term);
-			for(Pointer pointer : docsContainTerm.pointers){
-				if(!corpus.contains(pointer.docID))
-					corpus.add(pointer.docID);
-			}
-		}
-		
-		for(String file : corpus){
-			scores.put(file, 0.0);
-		}
-		
-		for(Entry<String, Integer> entry : query.entrySet()){
-			String term = entry.getKey();
-			int qf = entry.getValue();
-			if(!inverted_indexes.containsKey(term)) continue;
-			Pointers docsContainTerm = inverted_indexes.get(term);
-			System.out.println("Number of docs contain - " + term + " - " + docsContainTerm.pointers.size());
-			for(Pointer pointer : docsContainTerm.pointers){
-				String doc = pointer.docID;
-				int tf =  pointer.tf;
-				int dl = fileSize.get(doc);
-				double K = getKForDoc(dl);
-				double score = getScorePerDoc(corpus.size(), docsContainTerm.pointers.size(), qf, tf, K);
-				scores.replace(doc, score + scores.get(doc));
-			}
-		}
-		for(Entry<String, Double> entry : scores.entrySet()){
-			rank.add(new DocScore(entry.getKey(), entry.getValue()));
-		}
-		System.out.println("Size of rank is " + rank.size());
-		Collections.sort(rank,new Comparator(){
-			@Override
-			public int compare(Object o1, Object o2) {
-				DocScore d1 = (DocScore) o1;
-				DocScore d2 = (DocScore) o2;
-				int ret = 0;
-				if(d1.score - d2.score > 0) ret = -1;
-				if(d1.score - d2.score < 0) ret = 1;
-				return ret;
-			}
-		}); 
-		
-		File file = new File("results/Stop/"+ name + ".txt");
-		PrintWriter pw;
-		try {
-			pw = new PrintWriter(file);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return;
-		}
-		int i=1;
-		for(DocScore ds : rank){
-			if(i > 100) break;
-			pw.println(name.charAt(5) + " Q0 " + ds.docId + " " + i + " " + ds.score + " BM25");
-			i++;
-		}
-		pw.close();
-	}
-	
-	private void rankStopExtendPerQuery(Hashtable<String, Integer> query, String name, Hashtable<String, Double> scores, ArrayList<DocScore> rank1){
-		ArrayList<DocScore> rank = new ArrayList<DocScore>();
-		scores = new Hashtable<String, Double>();
-		System.out.println(name + " Parsing: ");
-		HashSet<String> corpus = new HashSet<String>();
-		for(Entry<String, Integer> entry : query.entrySet()){
-			String term = entry.getKey();
-			if(!inverted_indexes.containsKey(term)) continue;
-			Pointers docsContainTerm = inverted_indexes.get(term);
-			for(Pointer pointer : docsContainTerm.pointers){
-				if(!corpus.contains(pointer.docID))
-					corpus.add(pointer.docID);
-			}
-		}
-		
-		for(String file : corpus){
-			scores.put(file, 0.0);
-		}
-		
-		for(Entry<String, Integer> entry : query.entrySet()){
-			String term = entry.getKey();
-			int qf = entry.getValue();
-			if(!inverted_indexes.containsKey(term)) continue;
-			Pointers docsContainTerm = inverted_indexes.get(term);
-			System.out.println("Number of docs contain - " + term + " - " + docsContainTerm.pointers.size());
-			for(Pointer pointer : docsContainTerm.pointers){
-				String doc = pointer.docID;
-				int tf =  pointer.tf;
-				int dl = fileSize.get(doc);
-				double K = getKForDoc(dl);
-				double score = getScorePerDoc(corpus.size(), docsContainTerm.pointers.size(), qf, tf, K);
-				scores.replace(doc, score + scores.get(doc));
-			}
-		}
-		for(Entry<String, Double> entry : scores.entrySet()){
-			rank.add(new DocScore(entry.getKey(), entry.getValue()));
-		}
-		System.out.println("Size of rank is " + rank.size());
-		Collections.sort(rank,new Comparator(){
-			@Override
-			public int compare(Object o1, Object o2) {
-				DocScore d1 = (DocScore) o1;
-				DocScore d2 = (DocScore) o2;
-				int ret = 0;
-				if(d1.score - d2.score > 0) ret = -1;
-				if(d1.score - d2.score < 0) ret = 1;
-				return ret;
-			}
-		}); 
-		
-		File file = new File("results/StopExtend/"+ name + ".txt");
-		PrintWriter pw;
-		try {
-			pw = new PrintWriter(file);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return;
-		}
-		int i=1;
-		for(DocScore ds : rank){
-			if(i > 100) break;
-			pw.println(name.charAt(5) + " Q0 " + ds.docId + " " + i + " " + ds.score + " BM25");
-			i++;
-		}
-		pw.close();
-	}
-	
-	@SuppressWarnings("unchecked")
-	private void rankBM25PerQuery(Hashtable<String, Integer> query, String name, Hashtable<String, Double> scores, ArrayList<DocScore> rank1){
-		ArrayList<DocScore> rank = new ArrayList<DocScore>();
-		scores = new Hashtable<String, Double>();
-		System.out.println(name + " Parsing: ");
-		HashSet<String> corpus = new HashSet<String>();
-		for(Entry<String, Integer> entry : query.entrySet()){
-			String term = entry.getKey();
-			if(!inverted_indexes.containsKey(term)) continue;
-			Pointers docsContainTerm = inverted_indexes.get(term);
-			for(Pointer pointer : docsContainTerm.pointers){
-				if(!corpus.contains(pointer.docID))
-					corpus.add(pointer.docID);
-			}
-		}
-		
-		for(String file : corpus){
-			scores.put(file, 0.0);
-		}
-		
-		for(Entry<String, Integer> entry : query.entrySet()){
-			String term = entry.getKey();
-			int qf = entry.getValue();
-			if(!inverted_indexes.containsKey(term)) continue;
-			Pointers docsContainTerm = inverted_indexes.get(term);
-			System.out.println("Number of docs contain - " + term + " - " + docsContainTerm.pointers.size());
-			for(Pointer pointer : docsContainTerm.pointers){
-				String doc = pointer.docID;
-				int tf =  pointer.tf;
-				int dl = fileSize.get(doc);
-				double K = getKForDoc(dl);
-				double score = getScorePerDoc(corpus.size(), docsContainTerm.pointers.size(), qf, tf, K);
-				scores.replace(doc, score + scores.get(doc));
-			}
-		}
-		for(Entry<String, Double> entry : scores.entrySet()){
-			rank.add(new DocScore(entry.getKey(), entry.getValue()));
-		}
-		System.out.println("Size of rank is " + rank.size());
-		Collections.sort(rank,new Comparator(){
-			@Override
-			public int compare(Object o1, Object o2) {
-				DocScore d1 = (DocScore) o1;
-				DocScore d2 = (DocScore) o2;
-				int ret = 0;
-				if(d1.score - d2.score > 0) ret = -1;
-				if(d1.score - d2.score < 0) ret = 1;
-				return ret;
-			}
-		}); 
-		
-		File file = new File("results/BM25_Origin/"+ name + ".txt");
-		PrintWriter pw;
-		try {
-			pw = new PrintWriter(file);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return;
-		}
-		int i=1;
-		for(DocScore ds : rank){
-			if(i > 100) break;
-			pw.println(name.charAt(5) + " Q0 " + ds.docId + " " + i + " " + ds.score + " BM25");
-			i++;
-		}
-		pw.close();
-	}
-	
-	@SuppressWarnings("unchecked")
-	private void rankBM25_Derivants_PerQuery(Hashtable<String, Integer> query, String name, Hashtable<String, Double> scores, ArrayList<DocScore> rank1){
-		ArrayList<DocScore> rank = new ArrayList<DocScore>();
-		scores = new Hashtable<String, Double>();
-		System.out.println(name + " Parsing: ");
-		HashSet<String> corpus = new HashSet<String>();
-		for(Entry<String, Integer> entry : query.entrySet()){
-			String term = entry.getKey();
-			if(!inverted_indexes.containsKey(term)) continue;
-			Pointers docsContainTerm = inverted_indexes.get(term);
-			for(Pointer pointer : docsContainTerm.pointers){
-				if(!corpus.contains(pointer.docID))
-					corpus.add(pointer.docID);
-			}
-		}
-		
-		for(String file : corpus){
-			scores.put(file, 0.0);
-		}
-		
-		for(Entry<String, Integer> entry : query.entrySet()){
-			String term = entry.getKey();
-			int qf = entry.getValue();
-			if(!inverted_indexes.containsKey(term)) continue;
-			Pointers docsContainTerm = inverted_indexes.get(term);
-			System.out.println("Number of docs contain - " + term + " - " + docsContainTerm.pointers.size());
-			for(Pointer pointer : docsContainTerm.pointers){
-				String doc = pointer.docID;
-				int tf =  pointer.tf;
-				int dl = fileSize.get(doc);
-				double K = getKForDoc(dl);
-				double score = getScorePerDoc(corpus.size(), docsContainTerm.pointers.size(), qf, tf, K);
-				scores.replace(doc, score + scores.get(doc));
-			}
-		}
-		for(Entry<String, Double> entry : scores.entrySet()){
-			rank.add(new DocScore(entry.getKey(), entry.getValue()));
-		}
-		System.out.println("Size of rank is " + rank.size());
-		Collections.sort(rank,new Comparator(){
-			@Override
-			public int compare(Object o1, Object o2) {
-				DocScore d1 = (DocScore) o1;
-				DocScore d2 = (DocScore) o2;
-				int ret = 0;
-				if(d1.score - d2.score > 0) ret = -1;
-				if(d1.score - d2.score < 0) ret = 1;
-				return ret;
-			}
-		}); 
-		
-		File file = new File("results/BM25_Expanded_Derivants/"+ name + ".txt");
-		PrintWriter pw;
-		try {
-			pw = new PrintWriter(file);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return;
-		}
-		int i=1;
-		for(DocScore ds : rank){
-			if(i > 100) break;
-			pw.println(name.charAt(5) + " Q0 " + ds.docId + " " + i + " " + ds.score + " BM25");
-			i++;
-		}
-		pw.close();
-	}
-	
-	@SuppressWarnings("unchecked")
-	private void rankBM25_Synonym_PerQuery(Hashtable<String, Integer> query, String name, Hashtable<String, Double> scores, ArrayList<DocScore> rank1){
-		ArrayList<DocScore> rank = new ArrayList<DocScore>();
-		scores = new Hashtable<String, Double>();
-		System.out.println(name + " Parsing: ");
-		HashSet<String> corpus = new HashSet<String>();
-		for(Entry<String, Integer> entry : query.entrySet()){
-			String term = entry.getKey();
-			if(!inverted_indexes.containsKey(term)) continue;
-			Pointers docsContainTerm = inverted_indexes.get(term);
-			for(Pointer pointer : docsContainTerm.pointers){
-				if(!corpus.contains(pointer.docID))
-					corpus.add(pointer.docID);
-			}
-		}
-		
-		for(String file : corpus){
-			scores.put(file, 0.0);
-		}
-		
-		for(Entry<String, Integer> entry : query.entrySet()){
-			String term = entry.getKey();
-			int qf = entry.getValue();
-			if(!inverted_indexes.containsKey(term)) continue;
-			Pointers docsContainTerm = inverted_indexes.get(term);
-			System.out.println("Number of docs contain - " + term + " - " + docsContainTerm.pointers.size());
-			for(Pointer pointer : docsContainTerm.pointers){
-				String doc = pointer.docID;
-				int tf =  pointer.tf;
-				int dl = fileSize.get(doc);
-				double K = getKForDoc(dl);
-				double score = getScorePerDoc(corpus.size(), docsContainTerm.pointers.size(), qf, tf, K);
-				scores.replace(doc, score + scores.get(doc));
-			}
-		}
-		for(Entry<String, Double> entry : scores.entrySet()){
-			rank.add(new DocScore(entry.getKey(), entry.getValue()));
-		}
-		System.out.println("Size of rank is " + rank.size());
-		Collections.sort(rank,new Comparator(){
-			@Override
-			public int compare(Object o1, Object o2) {
-				DocScore d1 = (DocScore) o1;
-				DocScore d2 = (DocScore) o2;
-				int ret = 0;
-				if(d1.score - d2.score > 0) ret = -1;
-				if(d1.score - d2.score < 0) ret = 1;
-				return ret;
-			}
-		}); 
-		
-		File file = new File("results/BM25_Expanded_Synonym/"+ name + ".txt");
-		PrintWriter pw;
-		try {
-			pw = new PrintWriter(file);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return;
-		}
-		int i=1;
-		for(DocScore ds : rank){
-			if(i > 100) break;
-			pw.println(name.charAt(5) + " Q0 " + ds.docId + " " + i + " " + ds.score + " BM25");
+			pw.println(name + " Q0 " + ds.docId + " " + i + " " + ds.score + " " + searchEngine);
 			i++;
 		}
 		pw.close();
@@ -554,7 +254,7 @@ public class RM {
 	
 	/**************IFTDF***************/
 	public void rankTFIDF(){
-		ReadQuery rq = new ReadQuery("originalQueriesTokens.txt");
+		ReadQuery rq = new ReadQuery("quries/originalQueriesTokens.txt", 64);
 		ArrayList<Hashtable<String, Integer>> content;
 		try {
 			content = rq.Read();
@@ -569,7 +269,8 @@ public class RM {
 			System.out.println("TFIDF: query" + i + " processed!");
 		}
 	}
-	
+
+	//TFIDF
 	@SuppressWarnings("unchecked")
 	private void rankTFIDFPerQuery(Hashtable<String, Integer> query, String name){
 		Hashtable<String, Double> dividen = new Hashtable<String, Double>();
@@ -633,24 +334,46 @@ public class RM {
 		int i=1;
 		for(DocScore ds : rank){
 			if(i > 100) break;
-			pw.println(name.charAt(5) + " Q0 " + ds.docId + " " + i + " " + ds.score + " TFIDF");
+			pw.println(name + " Q0 " + ds.docId + " " + i + " " + ds.score + " TFIDF");
 			i++;
 		}
 		pw.close();
 	}
 	
-	
-	
-	
 	private double getKForDoc(int dl){
 		return k1 * (1 - b + b * dl / avdl);
 	}
 	
-	private double getScorePerDoc(int N, int n, int qf, int f, double K){
+	private double getScorePerDoc(int N, int n, int qf, int f, double K, int R, int r, int NR, int nr){
 		double score = 0;
+		double relevance = Math.log(((r+0.5)/(R-r+0.5))/((nr - r + 0.5)/(N-nr-R+r+0.5)));
 		score = (k1+1)*f/(K+f) * (k2+1)*qf/(k2+qf) * Math.log((0.5/0.5)/((n+0.5)/(N-n+0.5)));
-		return score;
+		return score*relevance;
 	}
+	
+	private int checkRelevance(String fileName, String query) throws IOException{
+		int ret = 0;
+		
+		Process p = Runtime.getRuntime().exec("python2.7 relevance.py -f " + fileName + " -q " + query);
+		BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+        BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+        // read the output from the command
+        String s = null;
+        while ((s = stdInput.readLine()) != null) {
+            if(s.contains("True"))
+            	ret = 1;
+            if(s.contains("False"))
+            	ret = -1;
+        }
+         
+        // read any errors from the attempted command
+        while ((s = stdError.readLine()) != null) {
+        	System.out.println(s);
+        	ret = 0;
+        }
+		return ret;
+	}
+	
 }
 
 class DocScore{

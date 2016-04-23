@@ -20,24 +20,14 @@ public class Executer {
 		scp.parse();
 		*/
 		
-		Summarizer s = new Summarizer();
-		s.initializeGrams();
-		s.rank();
-		
-		/*double socre1 = getScorePerDoc(500000, 40000, 1, 15, getKForDoc(0));
-		double socre2 = getScorePerDoc(500000, 300, 1, 25, getKForDoc(0));
-		System.out.println("Score1: " + socre1 );
-		System.out.println("Score2: " + socre2 );
-		System.out.println("Score: "  + (socre1+socre2));*/
-	}
-	
-	private static double getKForDoc(int dl){
-		return 1.2 * (1 - 0.75 + 0.75 * 0.9);
-	}
-	
-	private static double getScorePerDoc(int N, int n, int qf, int f, double K){
-		double score = 0;
-		score = Math.log((0.5/0.5)/((n+0.5)/(N-n+0.5))) * (1.2+1)*f/(K+f) * (100+1)*qf/(100+qf);
-		return score;
+		Summarizer s1 = new Summarizer("originalCorpus/");
+		s1.initializeGrams();
+		s1.rankOriginalCorpus();
+		Summarizer s2 = new Summarizer("stoppedCorpus/");
+		s2.initializeGrams();
+		s2.rankStoppedCorpus();
+		Summarizer s3 = new Summarizer("stemmedCorpus/");
+		s3.initializeGrams();
+		s3.rankStemmedCorpus();
 	}
 }
