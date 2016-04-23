@@ -79,6 +79,7 @@ public class RM {
 		}
 		
 	}
+	
 	public void rankBM25_Derivants(){
 		ReadQuery rq = new ReadQuery("quries/expandedQueriesTokensUsingDerivantsOriginalIncluded.txt", 64);
 		ArrayList<Hashtable<String, Integer>> content;
@@ -95,6 +96,7 @@ public class RM {
 		}
 		
 	}
+	
 	public void rankBM25_Synonym(){
 		ReadQuery rq = new ReadQuery("quries/expandedQueriesTokensUsingSynonymOriginalIncluded.txt", 64);
 		ArrayList<Hashtable<String, Integer>> content;
@@ -111,6 +113,7 @@ public class RM {
 		}
 		
 	}
+	
 	
 	public void rankStopExtend(){
 		ReadQuery rq = new ReadQuery("quries/stoppedExpandedQueriesTokensUsingDerivantsOriginalIncluded.txt", 64);
@@ -168,9 +171,8 @@ public class RM {
 		//relevance info
 		int R = 0, NR = 0;
 		
-		System.out.println(name + " Parsing: ");
+		System.out.println("\t" + name + " Parsing: ");
 		HashSet<String> corpus = new HashSet<String>();
-		System.out.println("\tCorpus size is : " + corpus.size());
 		for(Entry<String, Integer> entry : query.entrySet()){
 			String term = entry.getKey();
 			if(!inverted_indexes.containsKey(term)) continue;
@@ -180,19 +182,20 @@ public class RM {
 					corpus.add(pointer.docID);
 			}
 		}
-		
+		System.out.println("\t\tCorpus size is : " + corpus.size());
 		for(String file : corpus){
 			scores.put(file, 0.0);
 			if(checkRelevance(file, Integer.parseInt(name.substring(5)))) R++;
 			else NR ++;
 		}
+		System.out.println("\t\tR = " + R + ", NR = " + NR);
 		
 		for(Entry<String, Integer> entry : query.entrySet()){
 			String term = entry.getKey();
 			int qf = entry.getValue();
 			if(!inverted_indexes.containsKey(term)) continue;
 			Pointers docsContainTerm = inverted_indexes.get(term);
-			System.out.println("\tNumber of docs contain - " + term + " - " + docsContainTerm.pointers.size());
+			System.out.println("\t\tNumber of docs contain - " + term + " - " + docsContainTerm.pointers.size());
 			
 			//get relevance information here
 			int r = 0, nr = 0;
@@ -200,7 +203,6 @@ public class RM {
 				if(checkRelevance(pointer.docID, Integer.parseInt(name.substring(5)))) r++;
 				else nr ++;
 			}
-			
 			for(Pointer pointer : docsContainTerm.pointers){
 				String doc = pointer.docID;
 				int tf =  pointer.tf;
@@ -211,18 +213,16 @@ public class RM {
 			}
 		}
 		for(Entry<String, Double> entry : scores.entrySet()){
-			rank.add(new DocScore(entry.getKey(), entry.getValue()));
+			if(!Double.isNaN(entry.getValue()))
+				rank.add(new DocScore(entry.getKey(), entry.getValue()));
 		}
-		System.out.println("\tSize of rank is " + rank.size());
+		System.out.println("\t\tSize of rank is " + rank.size());
 		Collections.sort(rank,new Comparator(){
 			@Override
 			public int compare(Object o1, Object o2) {
 				DocScore d1 = (DocScore) o1;
 				DocScore d2 = (DocScore) o2;
-				int ret = 0;
-				if(d1.score - d2.score > 0) ret = -1;
-				if(d1.score - d2.score < 0) ret = 1;
-				return ret;
+				return -d1.score.compareTo(d2.score);
 			}
 		}); 
 		
@@ -257,7 +257,7 @@ public class RM {
 		for(Hashtable<String, Integer> query : content){
 			i++;
 			rankTFIDFPerQuery(query, "query"+i);
-			System.out.println("TFIDF: query" + i + " processed!");
+			System.out.println("\tquery" + i + " processed!");
 		}
 	}
 
@@ -314,7 +314,7 @@ public class RM {
 			}
 		}); 
 		
-		File file = new File("results/TFIDF_Origin/"+ name + ".txt");
+		File file = new File("../results/TFIDF_Origin/"+ name + ".txt");
 		PrintWriter pw;
 		try {
 			pw = new PrintWriter(file);
@@ -337,13 +337,16 @@ public class RM {
 	
 	private double getScorePerDoc(int N, int n, int qf, int f, double K, int R, int r, int NR, int nr){
 		double score = 0;
+		//if(((r+0.5)/(R-r+0.5)) == 0.0) System.out.println("**Got 0 on top!");
+		//if(((nr - r + 0.5)/(N-nr-R+r+0.5)) == 0.0) System.out.println("**Got 0 on botton!");
 		double relevance = Math.log(((r+0.5)/(R-r+0.5))/((nr - r + 0.5)/(N-nr-R+r+0.5)));
-		score = (k1+1)*f/(K+f) * (k2+1)*qf/(k2+qf) * Math.log((0.5/0.5)/((n+0.5)/(N-n+0.5)));
+		score = (k1+1)*f/(K+f) * (k2+1)*qf/(k2+qf);
+		//if(relevance == 0.0) System.out.println("**Got 0 on score!");
 		return score*relevance;
 	}
 	
 	private boolean checkRelevance(String fileName, int queryID){
-		String name = fileName.replace(".txt", "");
+		String name = fileName.replace(".html", "");
 		if(this.relevantDocs.containsKey(name) && this.relevantDocs.get(name) == queryID)
 			return true;
 		return false;
@@ -373,9 +376,9 @@ public class RM {
 
 class DocScore{
 	public String docId;
-	public double score;
+	public Double score;
 	
-	public DocScore(String docId, double score){
+	public DocScore(String docId, Double score){
 		this.docId = docId;
 		this.score = score;
 	}

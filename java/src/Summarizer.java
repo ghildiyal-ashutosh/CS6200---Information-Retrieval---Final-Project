@@ -64,17 +64,6 @@ public class Summarizer {
 			FileSize.put(file.getName(), uniTokens.length);
 			
 		}
-		/*Comparator<WordTF> wtfComparator = new WTFComparator();
-		PriorityQueue<WordTF> unigram1 = new PriorityQueue<WordTF>(1,wtfComparator);
-		
-		Comparator<WordDF> wdfComparator = new WDFComparator();
-		PriorityQueue<WordDF> unigram2 = new PriorityQueue<WordDF>(1,wdfComparator);
-		
-		//check unigram
-		for(Entry<String, Pointers> entry : unigram.entrySet()){
-			unigram1.add(new WordTF(entry.getKey(), entry.getValue().total));
-			unigram2.add(new WordDF(entry.getKey(), entry.getValue()));
-		}*/
 	}
 	
 	public void rankOriginalCorpus(){
@@ -90,7 +79,7 @@ public class Summarizer {
 		System.out.println("Finished Ranking BM25_Synonym");
 		
 		rm.rankTFIDF();
-		System.out.println("Finished Ranking TFIDF");	
+		System.out.println("Finished Ranking TFIDF");
 	}
 	
 	public void rankStoppedCorpus(){
