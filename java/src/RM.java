@@ -28,7 +28,7 @@ public class RM {
 	private Hashtable<String, Integer> fileSize;
 	private Hashtable<String, Pointers> inverted_indexes;
 	
-	private Hashtable<String, Integer> relevantDocs;
+	private HashSet<String> relevantDocs;
 	
 	private ArrayList<Hashtable<String, Double>> scores;
 	
@@ -185,6 +185,15 @@ public class RM {
 		System.out.println("\t\tCorpus size is : " + corpus.size());
 		for(String file : corpus){
 			scores.put(file, 0.0);
+			/*if(name.equals("query5") && (file.contains("CACM-0756") 
+					|| file.contains("CACM-1307") 
+					|| file.contains("CACM-1502") 
+					|| file.contains("CACM-2035") 
+					|| file.contains("CACM-2299") 
+					|| file.contains("CACM-2399")
+					|| file.contains("CACM-2501")
+					|| file.contains("CACM-2820")))
+				System.out.println(file);*/
 			if(checkRelevance(file, Integer.parseInt(name.substring(5)))) R++;
 			else NR ++;
 		}
@@ -337,24 +346,22 @@ public class RM {
 	
 	private double getScorePerDoc(int N, int n, int qf, int f, double K, int R, int r, int NR, int nr){
 		double score = 0;
-		//if(((r+0.5)/(R-r+0.5)) == 0.0) System.out.println("**Got 0 on top!");
-		//if(((nr - r + 0.5)/(N-nr-R+r+0.5)) == 0.0) System.out.println("**Got 0 on botton!");
 		double relevance = Math.log(((r+0.5)/(R-r+0.5))/((nr - r + 0.5)/(N-nr-R+r+0.5)));
 		score = (k1+1)*f/(K+f) * (k2+1)*qf/(k2+qf);
-		//if(relevance == 0.0) System.out.println("**Got 0 on score!");
 		return score*relevance;
 	}
 	
 	private boolean checkRelevance(String fileName, int queryID){
 		String name = fileName.replace(".html", "");
-		if(this.relevantDocs.containsKey(name) && this.relevantDocs.get(name) == queryID)
+		if(this.relevantDocs.contains(name+"*"+queryID)){
 			return true;
+		}
 		return false;
 	}
 	
 	
 	private void readRelvanceInfo() throws IOException{
-		this.relevantDocs = new Hashtable<String, Integer>();
+		this.relevantDocs = new HashSet<String>();
 		
 		// Open the file
 		FileInputStream fstream = new FileInputStream("../files/cacm.rel");
@@ -365,7 +372,7 @@ public class RM {
 		//Read File Line By Line
 		while ((strLine = br.readLine()) != null)   {
 		  String[] tokens = strLine.split(" ");
-		  relevantDocs.put(tokens[2], Integer.parseInt(tokens[0]));
+		  relevantDocs.add(tokens[2] + "*" + tokens[0]);
 		}
 
 		//Close the input stream
