@@ -1,9 +1,14 @@
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -23,6 +28,7 @@ public class RM {
 	private Hashtable<String, Integer> fileSize;
 	private Hashtable<String, Pointers> inverted_indexes;
 	
+	private Hashtable<String, Integer> relevantDocs;
 	
 	private ArrayList<Hashtable<String, Double>> scores;
 	
@@ -46,6 +52,13 @@ public class RM {
 		for(Entry<String, Integer> entry : fileSize.entrySet())
 			totalDl += entry.getValue();
 		this.avdl = totalDl/fileSize.size();
+		
+		//read relevance info
+		try {
+			readRelvanceInfo();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		System.out.println("avdl = " + avdl);
 	}
 	
@@ -170,18 +183,7 @@ public class RM {
 		
 		for(String file : corpus){
 			scores.put(file, 0.0);
-			int relevant;
-			try {
-				relevant = checkRelevance(file, name.substring(5));
-			} catch (IOException e) {
-				e.printStackTrace();
-				return;
-			}
-			if(relevant == 0){
-				System.out.println("Error Calling relevance.py!");
-				return;
-			}
-			else if(relevant == 1) R++;
+			if(checkRelevance(file, Integer.parseInt(name.substring(5)))) R++;
 			else NR ++;
 		}
 		
@@ -195,18 +197,7 @@ public class RM {
 			//get relevance information here
 			int r = 0, nr = 0;
 			for(Pointer pointer : docsContainTerm.pointers){
-				int relevant;
-				try {
-					relevant = checkRelevance(pointer.docID, name.substring(5));
-				} catch (IOException e) {
-					e.printStackTrace();
-					return;
-				}
-				if(relevant == 0){
-					System.out.println("Error Calling relevance.py!");
-					return;
-				}
-				else if(relevant == 1) r++;
+				if(checkRelevance(pointer.docID, Integer.parseInt(name.substring(5)))) r++;
 				else nr ++;
 			}
 			
@@ -351,27 +342,31 @@ public class RM {
 		return score*relevance;
 	}
 	
-	private int checkRelevance(String fileName, String query) throws IOException{
-		int ret = 0;
+	private boolean checkRelevance(String fileName, int queryID){
+		String name = fileName.replace(".txt", "");
+		if(this.relevantDocs.containsKey(name) && this.relevantDocs.get(name) == queryID)
+			return true;
+		return false;
+	}
+	
+	
+	private void readRelvanceInfo() throws IOException{
+		this.relevantDocs = new Hashtable<String, Integer>();
 		
-		Process p = Runtime.getRuntime().exec("python2.7 relevance.py -f " + fileName + " -q " + query);
-		BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
-        BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-        // read the output from the command
-        String s = null;
-        while ((s = stdInput.readLine()) != null) {
-            if(s.contains("True"))
-            	ret = 1;
-            if(s.contains("False"))
-            	ret = -1;
-        }
-         
-        // read any errors from the attempted command
-        while ((s = stdError.readLine()) != null) {
-        	System.out.println(s);
-        	ret = 0;
-        }
-		return ret;
+		// Open the file
+		FileInputStream fstream = new FileInputStream("../files/cacm.rel");
+		BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
+
+		String strLine;
+
+		//Read File Line By Line
+		while ((strLine = br.readLine()) != null)   {
+		  String[] tokens = strLine.split(" ");
+		  relevantDocs.put(tokens[2], Integer.parseInt(tokens[0]));
+		}
+
+		//Close the input stream
+		br.close();
 	}
 	
 }
