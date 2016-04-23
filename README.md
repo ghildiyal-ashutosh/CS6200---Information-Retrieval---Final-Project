@@ -1,4 +1,4 @@
-[See project report here](REPORT.md)
+[See project report here](/REPORT.md)
 
 1. All queries are stored in "quries" file.
 ⋅⋅* File names that ends with "OriginalIncluded" include both original terms and expanded terms. These versions are used in our project.
