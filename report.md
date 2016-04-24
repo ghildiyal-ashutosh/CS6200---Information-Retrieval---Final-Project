@@ -61,8 +61,11 @@ We use the five queries files above as following: In task 1, we use 1; In task 2
 ### Retrieval Models
 1. Lucene: the default setting is used. One problem is for query 37, there is two consecutive dashs, which makes the default parser of Lucene report an error. After removing this manually, it works well.
 2. Tf-Idf: 
-    <img src="/images/formula1.jpg" width="48">
-    <img src="/images/formula2.jpg" width="48">
+    
+    <img src="/images/formula1.jpg" width="150">
+
+    <img src="/images/formula2.jpg" width="150">
+
 3. BM25: Relevance information is included in this project. All other parameters are the same as in our previous assignment.
 
 ### Query-By-Query Analysis for Stemming
