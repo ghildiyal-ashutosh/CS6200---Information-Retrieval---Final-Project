@@ -6,6 +6,9 @@ import relevance
 # DirName = "Lucene"
 # DirName = "Stop"
 # DirName = "StopExtend"
+
+# non_rel_info_set = set([34, 45, 41, 46, 47, 50, 51, 52, 53, 54, 55, 56])
+
 DirNameList = []
 DirNameList.append("BM25_Expanded_Derivants")
 DirNameList.append("BM25_Expanded_Synonym")
@@ -20,10 +23,17 @@ for DirName in DirNameList:
 	MK5 = 0.0
 	MK20 = 0.0
 	outFileName = "../evaluation/" + DirName + "_Evaluation.txt"
+	outKFileName = "../evaluation/" + DirName + "_PrecisionAtK.txt"
 	of = open(outFileName, 'w')
+	ofk = open(outKFileName, 'w')
 	of.write("query rank precision recall\n")
+	ofk.write("query Pat5 Pat20\n")
+
+	totalQueryNum = 0
+
 	for fileName in glob.glob("../results/" + DirName + "/*.txt"):
 		preLength = 17 + len(DirName)
+
 		if DirName == "Lucene":
 			# print fileName
 			queryNum = fileName[preLength : -11]
@@ -41,6 +51,10 @@ for DirName in DirNameList:
 		recall = 0.0
 
 		totalRelevant = float(relevance.numRelevant(queryNum))
+		if totalRelevant == 0:
+			continue
+		else:
+			totalQueryNum += 1
 
 		for line in searchRes:
 			lineList = line.split()
@@ -70,25 +84,24 @@ for DirName in DirNameList:
 			of.write(str(recall) + "\n")
 
 
+
 		if relevanceRetrieved == 0.0:
 			averagePrecision = 0.0
 		else:
 			averagePrecision /= relevanceRetrieved
+
+		ofk.write(str(queryNum) + " ")
+		ofk.write(str(precisionAt5) + " ")
+		ofk.write(str(precisionAt20) + "\n")
 
 		MAP += averagePrecision
 		MRR += reciprocalPrecision
 		MK5 += precisionAt5
 		MK20 += precisionAt20
 
-		
-		# print queryNum + ":"
-		# print "    AP = " + str(averagePrecision)
-		# print "    RP = " + str(reciprocalPrecision)
-		# print "    P5 = " + str(precisionAt5)
-		# print "    P20= " + str(precisionAt20)
+
 		searchRes.close()
 
-	totalQueryNum = 64
 	MAP /= totalQueryNum
 	MRR /= totalQueryNum
 	MK5 /= totalQueryNum

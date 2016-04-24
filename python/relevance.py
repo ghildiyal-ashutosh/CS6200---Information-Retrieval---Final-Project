@@ -43,8 +43,9 @@ def numRelevant(queryNumber):
 	rf.close()
 	return count
 
-args = vars(parser.parse_args())
-print isRelevant(args['query'], args['file'])
+# args = vars(parser.parse_args())
+# print isRelevant(args['query'], args['file'])
+
 # print isRelevant(1, "CACM-1410") # T
 # print isRelevant(1, "CACM-1411") # F
 # print isRelevant(2, "CACM-2863") # T

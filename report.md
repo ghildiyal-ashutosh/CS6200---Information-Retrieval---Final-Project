@@ -39,6 +39,8 @@ Expand queries with derivants of the original term. For example, the word "code"
 2. [Natural Language Toolkit](http://www.nltk.org/): The NLP library;
 
 ## Implementation and Discussion
+Other than the relevance information for BM25 model, we did not use any corpus-specific or query-sensitive optimization.
+
 ### Query Expansion
 First, we tokenize the original 64 queries using [parseQueries.py](/python/parseQueries.py).
 
@@ -62,19 +64,31 @@ TODO
 ### Evaluation
 All evaluation values are obtained through [evaluation.py](/python/evaluation.py).
 
-## Results
-|                                                     | Mean Average Precision | Mean Reciprocal Rank |
-|-----------------------------------------------------|------------------------|----------------------|
-| BM25                                                |                        |123                   |345
-| Tf-Idf                                              |                        |234                   |456
-| Lucene                                              |                        |                      |
-| BM25 (Query Expansion Using Synonyms)               |                        |                      |
-| BM25 (Query Expansion Using Derivants)              |                        |                      |
-| BM25 (Stopping)                                     |                        |                      |
-| BM25 (Stopping and Query Expansion Using Derivants) |                        |                      |
+There are 12 documents that missing relevance information (34, 35, 41, 46, 47, 50, 51, 52, 53, 54, 55, 56). Thus search engines can never find any relevant documents of these queries, so we exclude them in evaluation. It means all the averaged results are base on the remaining 52 valid queries.
 
+## Results
+|   | Mean Average Precision    | Mean Reciprocal Rank  |
+|----------------------------------------   |------------------------   |---------------------- |
+| Lucene    | 0.414     | 0.683     |
+| Tf-Idf    | 0.308     | 0.521     |
+| BM25  | 0.480     | 0.732     |
+| BM25 (Query Expansion Using Synonyms)     | 0.465     | 0.708     |
+| BM25 (Query Expansion Using Derivants)    | 0.468     | 0.728     |
+| BM25 (Stopping)   | 0.449     | 0.725     |
+| BM25 (Stopping and Derivants)     | 0.443     | 0.718     |
+
+As listed in the table, the performance of BM25 is much better than Lucene and tf-idf models. Beyond the difference among retrieval models, a significant reason is that it takes advantage of the relevance information.
+
+We used two approaches of query expansion. Both synonyms and derivants result in decrease of performance. Synonyms has a worse impact on the results than Derivants. By observing expanded queries, we can see that the synonym API includes too many similar terms, some of which may be irrelevant. For example, it expands "selection" into 7 terms including "option", "survival", "pick", and "choice". Besides spicies evolution related topic, "selection" and "survival" are not even synonyms. The derivants is less "aggresive" when expanse queries since it only include derivants of terms. Also, the decrese is nonsignificant, so it is difficult to tell which method is better.
+
+In our case, stopping also decreases the performance in both precision and reciprocal rank.
 
 ## Conclusions and Outlook
+Relevance information can improve performance of search engines a lot. However these data are usually not available, so we also need to focus on other improvements for search engines. 
+
+For query expansion, it is likely that we could over expanse terms. Usually some irrelavant terms are included so that precision decreses. When using query expansion, we need to be very careful and selective for the expanded terms.
+
+Other options like stopping can also have a negative impact. 
 
 ## Bibliography
 1. Manning, Christopher D., Prabhakar Raghavan, and Hinrich Schütze. "Introduction to information retrieval/Christopher D." (2008).
