@@ -8,6 +8,8 @@
 ## Introduction
 This project uses a combination of Java and Python. All retrieval models themselves are written in Java, and everything else including query expansion, evaluation, and other text processing is written in Python.
 
+Contributions: TODO
+
 ## Literature and Resources
 ###  Retrieval Models
 We used 3 retrieval models:
@@ -57,14 +59,16 @@ Finally, use [getQueries.py](/python/getQueries.py) to appy the query expansion.
 We use the five queries files above as following: In task 1, we use 1; In task 2, we combine 1 with 2 and 3, respectively; In task 3A, we use 4; In Phase 2 (7th run), we use the combination of 4 and 5.
 
 ### Retrieval Models
-TODO
+1. Lucene: the default setting is used. One problem is for query 37, there is two consecutive dashs, which makes the default parser of Lucene report an error. After removing this manually, it works well.
+2. Tf-Idf: TODO
+3. BM25: Relevance information is included in this project. All other parameters are the same as in our previous assignment.
 
 ### Query-By-Query Analysis for Stemming
 
 ### Evaluation
-All evaluation values are obtained through [evaluation.py](/python/evaluation.py).
+All evaluation values are obtained through running [evaluation.py](/python/evaluation.py).
 
-There are 12 documents that missing relevance information (34, 35, 41, 46, 47, 50, 51, 52, 53, 54, 55, 56). Thus search engines can never find any relevant documents of these queries, so we exclude them in evaluation. It means all the averaged results are base on the remaining 52 valid queries.
+There are 12 documents that missing relevance information (34, 35, 41, 46, 47, 50, 51, 52, 53, 54, 55, 56). Thus any search engine can never find any relevant documents of these queries, so we exclude them in evaluations. It means all the averaged results are base on the remaining 52 valid queries.
 
 ## Results
 |   | Mean Average Precision    | Mean Reciprocal Rank  |
@@ -82,6 +86,8 @@ As listed in the table, the performance of BM25 is much better than Lucene and t
 We used two approaches of query expansion. Both synonyms and derivants result in decrease of performance. Synonyms has a worse impact on the results than Derivants. By observing expanded queries, we can see that the synonym API includes too many similar terms, some of which may be irrelevant. For example, it expands "selection" into 7 terms including "option", "survival", "pick", and "choice". Besides spicies evolution related topic, "selection" and "survival" are not even synonyms. The derivants is less "aggresive" when expanse queries since it only include derivants of terms. Also, the decrese is nonsignificant, so it is difficult to tell which method is better.
 
 In our case, stopping also decreases the performance in both precision and reciprocal rank.
+
+Other evaluation reports including precision at rank 5 and 20, precision and recall of every query at every rank, can be found in directory "evaluation".
 
 ## Conclusions and Outlook
 Relevance information can improve performance of search engines a lot. However these data are usually not available, so we also need to focus on other improvements for search engines. 
