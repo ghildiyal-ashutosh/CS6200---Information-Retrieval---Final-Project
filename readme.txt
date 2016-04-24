@@ -1,5 +1,3 @@
-[See project report here](/report.md)
-
 * Python Package required to install:
     - nltk(http://www.nltk.org/)
     - unirest(http://unirest.io/)

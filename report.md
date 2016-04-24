@@ -72,14 +72,12 @@ Finally, use [getQueries.py](/python/getQueries.py) to appy the query expansion.
 We use the five queries files above as following: In task 1, we use 1; In task 2, we combine 1 with 2 and 3, respectively; In task 3A, we use 4; In Phase 2 (7th run), we use the combination of 4 and 5.
 
 ### Retrieval Models
-1. Lucene: We are using standard analyzer. To run Lucene, you'll have to include all the files in "lucene" folder to a new project and run "lucene.java"
+1. Lucene: We are using standard analyzer.
 2. Tf-Idf: For TFIDF, we are using the formula tf * idf, wher tf, idf are
 
     <img src="/images/formula1.jpg" width="200">
 
     <img src="/images/formula2.jpg" width="150">
-
-    This part of code has already been included in the "java" folder, just run "Executer.java", you'll get the results in "../results/" folder.
 
 3. BM25: For Parameters, we set k1 = 1.2, k2 = 100.0, b = 0.75; And the formula we are using is
 
@@ -87,9 +85,15 @@ We use the five queries files above as following: In task 1, we use 1; In task 2
 
   In this search engine, we are utilizing the relevance informations in BM25. More specifically speaking, we retrived all the relevance infomation in the program and calculate N, R, n, r to apply them in our formular above. It's worth mentioned that the filenames in cacm.rel has some mistakes: when the file number is less than four digits, the name will omit the '0' at the frnt digits. To fix this, we mannually add the missing '0's to the relevance document.
 
-  To run the BM25 search engine, you'll have to unzip all the files under "java" folder, include all the .java files and execute the "Executer.java" file. The out put will be under "../results/" folder to current "java" folder. Also, please include the jsoup.jar file in the exteral library of the project.
-
 ### Query-By-Query Analysis for Stemming
+For query 1 "portabl oper system", I think the original meaning of this query is search the "portable operating system", and as we can see from the results, the top scored 5 documents are "2246, 1930, 3196, 3127, 2593".
+For 2246, 1930, 3196 and 2593, I think they are less relevant to the query, it's partially because of the stemming it self. For instance in 2246, there is not "operating" or "System", but through stemming, the word "operation" in 2246 is stemmed as "oper", and thus got a high score.
+
+For query 2 "code optim for space effici", I think the original meaning of this query should be "code optimization for space efficiency". For this query, the top 5 docs are "2491, 1947, 3033, 2801, 1807". And in my opinion, the stemming strategy for this query works pretty good. As we can see from the top documents, many words have similar meanings but are not the same format are retrived through stemming method. For example: optim, optimal, optimize, optimization - they are all retrived correctly! And for effici, efficient, efficiency, they are retirved correctly too!
+
+For query 3 "parallel algorithm". We can see that stemming has no effect on the query words for this query. However stemming shows positive effects in the documents. "Parallelism", "Paralleling" are stemmed as "parallel", and this increases the score for these relevant documents.
+
+In all, the effectiveness for stemming really depends on the specific words, query and documents. Sometimes it may works pretty well, but when it comes to some general words like "police", "political", "polite" etc, it may have some side effects on our results.
 
 ### Evaluation
 All evaluation values are obtained through running [evaluation.py](/python/evaluation.py).

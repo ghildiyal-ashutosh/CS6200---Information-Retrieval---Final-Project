@@ -83,8 +83,6 @@ for DirName in DirNameList:
 			of.write(str(relevanceRetrieved / rank) + " ")
 			of.write(str(recall) + "\n")
 
-
-
 		if relevanceRetrieved == 0.0:
 			averagePrecision = 0.0
 		else:
@@ -113,6 +111,7 @@ for DirName in DirNameList:
 	of.write( "MK5  " + str(MK5) + '\n')
 	of.write( "MK20 " + str(MK20) + '\n')
 	of.close()
+	ofk.close()
 
 	print DirName
 	print "  MAP = " + str(MAP)
