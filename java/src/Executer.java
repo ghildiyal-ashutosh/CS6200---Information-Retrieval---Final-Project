@@ -4,21 +4,21 @@ import java.util.regex.Pattern;
 
 public class Executer {
 	public static void main(String[] args){
-		/*FileParser fp = new FileParser();
+		FileParser fp = new FileParser();
 		try {
 			fp.parseHtml();
 			fp.parseFileName();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		*/
 		
-		/*FileParser fp1 = new FileParser();
+		
+		FileParser fp1 = new FileParser();
 		fp1.tokenize();
-		*/
-		/*StemCorpusParser scp = new StemCorpusParser();
+		
+		StemCorpusParser scp = new StemCorpusParser();
 		scp.parse();
-		*/
+		
 		
 		Summarizer s1 = new Summarizer("originalCorpus/");
 		s1.initializeGrams();
