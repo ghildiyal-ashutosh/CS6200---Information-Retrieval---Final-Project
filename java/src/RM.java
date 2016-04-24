@@ -127,7 +127,7 @@ public class RM {
 		int i=0;
 		for(Hashtable<String, Integer> query : content){
 			i++;
-			rankPerQuery(query, "query"+i, "StopExtend", "BM25");
+			rankPerQuery(query, "query"+i, "StopExpand", "BM25");
 		}
 	}
 	
