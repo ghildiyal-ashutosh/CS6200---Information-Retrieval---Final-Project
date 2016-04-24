@@ -6,9 +6,22 @@
 * Intructor: Prof. Naji
 
 ## Introduction
+### Desciption
 This project uses a combination of Java and Python. All retrieval models themselves are written in Java, and everything else including query expansion, evaluation, and other text processing is written in Python.
 
-Contributions: TODO
+### Contributions
+* Wei Xu:
+    - Builds BM25 search engine
+    - Builds Tf-Idf search engine
+    - Documentation
+* Yu Xie:
+    - Implements query expansions
+    - Implements evaluation scripts
+    - Documentation
+* Yue Liu:
+    - Builds Lucene search engine
+    - Implements stopping parser
+    - Documentation
 
 ## Literature and Resources
 ###  Retrieval Models
@@ -28,7 +41,7 @@ Stopping is a technique that exclude words that are too common to identify targe
 
 Even for search engines that do not apply stopping, we elimitate common words when expanding queries. These words would remain in queries, but we do not expand them. For example, it doesn't make any sense to expand query "what is cacm" into something like "what which whats is are am be cacm".
 
-We use the same term weigts for original query terms and expanded terms, and two expansion techniques are used as follows: 
+We use the same term weigts for original query terms and expanded terms, and two expansion techniques are used as follows:
 
 #### 1. Synonym
 Expand queries with words that have similar meanings. For example. the word "code" is expanded as 6 other words: "encipher", "cypher", "encrypt" "codification", "inscribe", and "cipher".
@@ -59,14 +72,22 @@ Finally, use [getQueries.py](/python/getQueries.py) to appy the query expansion.
 We use the five queries files above as following: In task 1, we use 1; In task 2, we combine 1 with 2 and 3, respectively; In task 3A, we use 4; In Phase 2 (7th run), we use the combination of 4 and 5.
 
 ### Retrieval Models
-1. Lucene: the default setting is used. One problem is for query 37, there is two consecutive dashs, which makes the default parser of Lucene report an error. After removing this manually, it works well.
-2. Tf-Idf: 
-    
-    <img src="/images/formula1.jpg" width="150">
+1. Lucene: We are using standard analyzer. To run Lucene, you'll have to include all the files in "lucene" folder to a new project and run "lucene.java"
+2. Tf-Idf: For TFIDF, we are using the formula tf * idf, wher tf, idf are
+
+    <img src="/images/formula1.jpg" width="200">
 
     <img src="/images/formula2.jpg" width="150">
 
-3. BM25: Relevance information is included in this project. All other parameters are the same as in our previous assignment.
+    This part of code has already been included in the "java" folder, just run "Executer.java", you'll get the results in "../results/" folder.
+
+3. BM25: For Parameters, we set k1 = 1.2, k2 = 100.0, b = 0.75; And the formula we are using is
+
+  <img src="/images/formula3.jpg" width="700">
+
+  In this search engine, we are utilizing the relevance informations in BM25. More specifically speaking, we retrived all the relevance infomation in the program and calculate N, R, n, r to apply them in our formular above. It's worth mentioned that the filenames in cacm.rel has some mistakes: when the file number is less than four digits, the name will omit the '0' at the frnt digits. To fix this, we mannually add the missing '0's to the relevance document.
+
+  To run the BM25 search engine, you'll have to unzip all the files under "java" folder, include all the .java files and execute the "Executer.java" file. The out put will be under "../results/" folder to current "java" folder. Also, please include the jsoup.jar file in the exteral library of the project.
 
 ### Query-By-Query Analysis for Stemming
 
@@ -95,16 +116,13 @@ In our case, stopping also decreases the performance in both precision and recip
 Other evaluation reports including precision at rank 5 and 20, precision and recall of every query at every rank, can be found in directory "evaluation".
 
 ## Conclusions and Outlook
-Relevance information can improve performance of search engines a lot. However these data are usually not available, so we also need to focus on other improvements for search engines. 
+Relevance information can improve performance of search engines a lot. However these data are usually not available, so we also need to focus on other improvements for search engines.
 
 For query expansion, it is likely that we could over expanse terms. Usually some irrelavant terms are included so that precision decreses. When using query expansion, we need to be very careful and selective for the expanded terms.
 
-Other options like stopping can also have a negative impact. 
+Other options like stopping can also have a negative impact.
 
 ## Bibliography
 1. Manning, Christopher D., Prabhakar Raghavan, and Hinrich Schütze. "Introduction to information retrieval/Christopher D." (2008).
 2. Croft, W. Bruce, Donald Metzler, and Trevor Strohman. Search engines: Information retrieval in practice. Vol. 283. Reading: Addison-Wesley, 2010.
 3. Course Notes and Slides of CS 6200 Spring 2016, Northeastern University.
-
-
-
